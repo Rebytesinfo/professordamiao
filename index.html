@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Missão LGPD — Guardião dos Dados</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f3f5f8;color:#182033}
+.container{max-width:850px;margin:0 auto;padding:24px}
+.card{background:#fff;border:1px solid #dfe3ea;border-radius:18px;padding:24px;margin-bottom:18px}
+h1,h2,h3{margin-top:0}.subtitle{color:#687386}
+input{width:100%;padding:14px;border:1px solid #cbd2dc;border-radius:10px;font-size:16px;margin:8px 0 16px}
+button{cursor:pointer;border:0;border-radius:10px;padding:13px 18px;font-size:16px;font-weight:700}
+.primary{background:#1f2a44;color:#fff}.option{width:100%;text-align:left;background:#fff;border:2px solid #dfe3ea;margin:7px 0}.option:hover{background:#f5f7fa}
+.correct{border-color:#22a447!important;background:#eaf8ee!important}.wrong{border-color:#d93025!important;background:#fff0ef!important}
+.stats{display:flex;gap:20px;flex-wrap:wrap;font-weight:700}.bar{height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin-top:14px}.fill{height:100%;background:#1f2a44;width:0}
+.feedback{margin-top:15px;padding:15px;border-radius:10px;background:#f4f6f9}.hidden{display:none}.center{text-align:center}.big{font-size:48px}
+.badge{display:inline-block;padding:7px 12px;border-radius:99px;background:#eef1f6;margin:3px}
+@media(max-width:600px){.container{padding:12px}.card{padding:18px}}
+</style>
+</head>
+<body>
+<div class="container">
+<div id="start" class="card">
+  <div class="center">
+    <div class="big">🛡️</div>
+    <h1>MISSÃO LGPD</h1>
+    <h2>O Guardião dos Dados</h2>
+    <p class="subtitle">Teste seus conhecimentos sobre proteção de dados pessoais.</p>
+  </div>
+  <label><b>Nome do aluno</b></label>
+  <input id="student" placeholder="Digite seu nome">
+  <label><b>Turma</b></label>
+  <input id="className" placeholder="Digite sua turma">
+  <button class="primary" style="width:100%" onclick="startGame()">🚀 Iniciar missão</button>
+</div>
+
+<div id="game" class="hidden">
+  <div class="card">
+    <div class="stats">
+      <span>❤️ Vidas: <b id="lives">5</b></span>
+      <span>⭐ Pontos: <b id="score">0</b></span>
+      <span>🎯 <b id="counter">1/20</b></span>
+    </div>
+    <div class="bar"><div id="fill" class="fill"></div></div>
+  </div>
+  <div class="card">
+    <div class="subtitle" id="category"></div>
+    <h2 id="question"></h2>
+    <div id="options"></div>
+    <div id="feedback" class="feedback hidden"></div>
+    <button id="nextBtn" class="primary hidden" onclick="nextQuestion()">Próxima pergunta →</button>
+  </div>
+</div>
+
+<div id="result" class="card center hidden">
+  <div class="big">🏆</div>
+  <h1>Missão concluída!</h1>
+  <p id="finalText"></p>
+  <button class="primary" onclick="location.reload()">🔄 Jogar novamente</button>
+  <button onclick="window.print()">🖨️ Imprimir resultado</button>
+</div>
+</div>
+
+<script>
+const questions=[
+["CONCEITO","O que significa LGPD?",["Lei Geral de Proteção de Dados Pessoais","Lei Geral de Publicidade Digital","Lei de Gestão de Pessoas e Documentos","Lei Geral de Processos Digitais"],0,"LGPD significa Lei Geral de Proteção de Dados Pessoais."],
+["FINALIDADE","Qual é uma das principais finalidades da LGPD?",["Aumentar a publicidade","Proteger direitos fundamentais de liberdade e privacidade","Eliminar computadores","Permitir compartilhamento irrestrito"],1,"A LGPD busca proteger direitos fundamentais relacionados à liberdade, privacidade e ao desenvolvimento da personalidade."],
+["DADO PESSOAL","Qual situação apresenta um dado pessoal?",["Temperatura de uma sala","Quantidade de cadeiras","Nome e telefone de uma pessoa identificada","Número de produtos no estoque"],2,"Nome e telefone podem identificar ou tornar uma pessoa identificável."],
+["DADO SENSÍVEL","Qual alternativa apresenta um exemplo de dado pessoal sensível?",["Cor favorita","Religião","Número de uma sala","Horário de almoço"],1,"Dados sobre religião estão entre os dados pessoais sensíveis previstos na LGPD."],
+["NECESSIDADE","Uma empresa pede informações que não precisa para prestar determinado serviço. Qual princípio deve ser observado?",["Necessidade","Decoração","Publicidade","Velocidade"],0,"O princípio da necessidade busca limitar o tratamento ao mínimo necessário para a finalidade."],
+["FINALIDADE","Um cadastro foi criado para inscrição em um curso. Usar os dados para finalidade incompatível é uma boa prática?",["Sim, sempre","Sim, se os dados forem antigos","Não, a finalidade deve ser legítima e adequada","Sim, se ninguém reclamar"],2,"Os dados devem ser tratados de acordo com finalidades legítimas e adequadas."],
+["SEGURANÇA","Um funcionário vai sair do computador por alguns minutos. O que deve fazer?",["Deixar a tela aberta","Bloquear a tela","Anotar a senha no monitor","Desligar o roteador"],1,"Bloquear a tela reduz o risco de acesso indevido."],
+["SENHAS","Um colega pede sua senha para acessar seu computador. Qual é a atitude correta?",["Entregar a senha","Enviar por WhatsApp","Não compartilhar e utilizar acesso próprio","Escrever em um papel"],2,"Credenciais são pessoais e não devem ser compartilhadas."],
+["WHATSAPP","Um funcionário fotografa uma lista de clientes e envia em grupo de WhatsApp sem relação com o trabalho. Isso é adequado?",["Sim","Não","Somente à noite","Somente se houver mais de 10 pessoas"],1,"O compartilhamento deve respeitar finalidade, necessidade e segurança."],
+["CURRÍCULO","Um currículo contém CPF, telefone e endereço. Um funcionário decide publicar a foto em rede social. Isso é adequado?",["Sim, porque currículo é público","Não, pois há dados pessoais e a publicação pode ser indevida","Sim, se estiver sem legenda","Sim, porque a pessoa entregou o currículo"],1,"Entregar um currículo para finalidade específica não significa autorizar sua publicação."],
+["TITULAR","Na LGPD, quem é o titular dos dados pessoais?",["A empresa que armazena os dados","A pessoa natural a quem os dados se referem","O computador","O funcionário do RH"],1,"Titular é a pessoa natural a quem se referem os dados pessoais."],
+["DIREITOS","Uma pessoa quer saber quais dados pessoais uma empresa possui sobre ela. Isso está relacionado a:",["Direitos do titular","Controle de estoque","Marketing","Folha de pagamento"],0,"A LGPD assegura direitos ao titular, observadas as regras legais."],
+["COMPARTILHAMENTO","Antes de compartilhar dados pessoais com outra organização, é importante verificar:",["Somente o tamanho do arquivo","Finalidade, necessidade e hipótese legal aplicável","A cor da planilha","Se o arquivo é PDF"],1,"O compartilhamento deve estar fundamentado e seguir os princípios e regras aplicáveis."],
+["INCIDENTE","Uma planilha com dados de clientes foi enviada por engano para a pessoa errada. O que isso pode representar?",["Incidente de segurança","Rotina normal","Campanha publicitária","Nenhum problema"],0,"Um envio indevido pode caracterizar incidente envolvendo dados pessoais."],
+["PHISHING","Você recebe e-mail pedindo CPF, senha e código de acesso por link desconhecido. O que fazer?",["Clicar imediatamente","Responder com os dados","Verificar a origem e não fornecer dados por link suspeito","Encaminhar para todos"],2,"Links e solicitações suspeitas podem ser tentativas de fraude ou phishing."],
+["DOCUMENTOS","Um documento com dados pessoais não é mais necessário. Qual atitude é mais adequada?",["Deixá-lo sobre a mesa","Descartá-lo de qualquer maneira","Seguir o procedimento seguro de descarte da organização","Fotografá-lo antes"],2,"O descarte deve seguir procedimentos que impeçam acesso indevido aos dados."],
+["ACESSO","Um funcionário precisa consultar dados de clientes para realizar sua atividade. Qual prática é mais adequada?",["Dar acesso a tudo","Liberar somente o necessário para sua função","Compartilhar senha de outro funcionário","Usar conta genérica"],1,"O acesso deve ser compatível com a necessidade e a função exercida."],
+["PRIVACIDADE","Qual comportamento ajuda a proteger a privacidade no ambiente de trabalho?",["Deixar documentos expostos","Conversar sobre dados em locais públicos","Evitar exposição desnecessária de informações","Compartilhar planilhas em grupos abertos"],2,"Evitar exposição desnecessária reduz riscos de acesso ou divulgação indevida."],
+["RESPONSABILIDADE","Ao identificar possível vazamento de dados, o funcionário deve:",["Ignorar","Apagar todas as provas","Comunicar imediatamente pelos canais definidos pela organização","Publicar nas redes sociais"],2,"Incidentes devem ser comunicados pelos canais internos adequados."],
+["DESAFIO FINAL","Qual atitude representa melhor uma cultura de proteção de dados?",["Não é problema meu.","Só protejo os dados quando alguém estiver olhando.","Proteção de dados faz parte da responsabilidade de todos.","Quanto mais dados eu tiver, melhor."],2,"Uma cultura de proteção de dados depende de boas práticas e responsabilidade de todos."]
+];
+
+let index=0,score=0,lives=5,answered=false,student="",className="";
+
+function startGame(){
+ student=document.getElementById("student").value.trim();
+ className=document.getElementById("className").value.trim();
+ if(!student){alert("Digite o nome do aluno.");return}
+ document.getElementById("start").classList.add("hidden");
+ document.getElementById("game").classList.remove("hidden");
+ render();
+}
+function render(){
+ answered=false;
+ const q=questions[index];
+ document.getElementById("category").textContent=q[0];
+ document.getElementById("question").textContent=q[1];
+ document.getElementById("counter").textContent=(index+1)+"/20";
+ document.getElementById("score").textContent=score;
+ document.getElementById("lives").textContent=lives;
+ document.getElementById("fill").style.width=(index/20*100)+"%";
+ document.getElementById("feedback").classList.add("hidden");
+ document.getElementById("nextBtn").classList.add("hidden");
+ const box=document.getElementById("options"); box.innerHTML="";
+ q[2].forEach((option,n)=>{
+   const b=document.createElement("button");
+   b.className="option"; b.textContent=String.fromCharCode(65+n)+") "+option;
+   b.onclick=()=>answer(n,b); box.appendChild(b);
+ });
+}
+function answer(n,btn){
+ if(answered)return; answered=true;
+ const q=questions[index], correct=n===q[3];
+ [...document.querySelectorAll(".option")].forEach((b,k)=>{
+   b.disabled=true; if(k===q[3])b.classList.add("correct");
+ });
+ if(correct)score+=10;else{btn.classList.add("wrong");lives--;}
+ document.getElementById("score").textContent=score;
+ document.getElementById("lives").textContent=lives;
+ const f=document.getElementById("feedback");f.classList.remove("hidden");
+ f.innerHTML="<b>"+(correct?"✅ CORRETO! +10 pontos":"❌ RESPOSTA INCORRETA")+"</b><br>"+q[4];
+ const nb=document.getElementById("nextBtn");nb.textContent=(index===19||lives===0)?"Ver resultado 🏆":"Próxima pergunta →";nb.classList.remove("hidden");
+}
+function nextQuestion(){
+ if(index===19||lives===0){finish();return}
+ index++;render();
+}
+function finish(){
+ document.getElementById("game").classList.add("hidden");
+ document.getElementById("result").classList.remove("hidden");
+ document.getElementById("fill").style.width="100%";
+ let classification=score>=180?"🛡️ Guardião Mestre dos Dados":score>=140?"🔐 Especialista em LGPD":score>=100?"📚 Aprendiz da LGPD":"🚨 Recruta — hora de estudar mais!";
+ document.getElementById("finalText").innerHTML="<b>"+student+"</b><br>"+(className?className+"<br>":"")+"Pontuação: <b>"+score+"/200</b><br>Vidas restantes: ❤️ "+lives+"<br><br><span class='badge'>"+classification+"</span>";
+}
+</script>
+</body>
+</html>
